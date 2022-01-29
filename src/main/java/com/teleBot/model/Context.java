@@ -4,8 +4,11 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedEnum;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTyped;
 import com.teleBot.utils.CommandTypeConverter;
 import com.teleBot.utils.MapObjectConverter;
+import com.teleBot.utils.MapStringConverter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +22,7 @@ public class Context {
     public static final String HASH_KEY = "id";
     public static final String PARAMS_FIELD = "p";
     public static final String LOCATION_FIELD = "l";
+    public static final String COMMANDS_FIELD = "c";
 
     @DynamoDBHashKey(attributeName = HASH_KEY)
     private long userId;
@@ -31,13 +35,18 @@ public class Context {
     @DynamoDBAttribute(attributeName = LOCATION_FIELD)
     private List<CommandType> location = new ArrayList<>();
 
+    @DynamoDBAttribute(attributeName = COMMANDS_FIELD)
+    @DynamoDBTypeConverted(converter = MapStringConverter.class)
+    private Map<String, String> commands;
+
     public Context() {
     }
 
-    public Context(int userId, Map<String, Object> params, List<CommandType> location) {
+    public Context(int userId, Map<String, Object> params, List<CommandType> location, Map<String, String> commands) {
         this.userId = userId;
         this.params = params;
         this.location = location;
+        this.commands = commands;
     }
 
     public long getUserId() {
@@ -62,5 +71,13 @@ public class Context {
 
     public void setLocation(List<CommandType> location) {
         this.location = location;
+    }
+
+    public Map<String, String> getCommands() {
+        return commands;
+    }
+
+    public void setCommands(Map<String, String> commands) {
+        this.commands = commands;
     }
 }

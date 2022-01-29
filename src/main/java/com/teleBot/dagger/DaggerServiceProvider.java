@@ -5,10 +5,12 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagement;
 import com.amazonaws.services.simplesystemsmanagement.AWSSimpleSystemsManagementClientBuilder;
 import com.teleBot.dao.IContextDao;
+import com.teleBot.dao.IPlayerDao;
 import com.teleBot.dao.ISettingDao;
 import com.teleBot.dao.IUserDao;
 import com.teleBot.dao.IUserSessionDao;
 import com.teleBot.service.IContextService;
+import com.teleBot.service.IPlayerService;
 import com.teleBot.service.IRoleFacade;
 import com.teleBot.service.IS3Service;
 import com.teleBot.service.ISecretService;
@@ -16,6 +18,7 @@ import com.teleBot.service.ISettingService;
 import com.teleBot.service.IUserService;
 import com.teleBot.service.IUserSessionService;
 import com.teleBot.service.impl.ContextService;
+import com.teleBot.service.impl.PlayerService;
 import com.teleBot.service.impl.RoleFacade;
 import com.teleBot.service.impl.S3Service;
 import com.teleBot.service.impl.SecretService;
@@ -61,6 +64,12 @@ public class DaggerServiceProvider {
     @Singleton
     public IUserService userService(IUserDao userDao) {
         return new UserService(userDao);
+    }
+
+    @Provides
+    @Singleton
+    public IPlayerService playerService(IPlayerDao playerDao) {
+        return new PlayerService(playerDao);
     }
 
     @Provides

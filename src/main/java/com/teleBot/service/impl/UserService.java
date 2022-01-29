@@ -3,9 +3,11 @@ package com.teleBot.service.impl;
 import com.teleBot.dao.IUserDao;
 import com.teleBot.model.KeyBoardType;
 import com.teleBot.model.MessageHolder;
+import com.teleBot.model.Role;
 import com.teleBot.model.User;
 import com.teleBot.service.IUserService;
 import com.teleBot.utils.MessageUtils;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
 
@@ -23,6 +25,25 @@ public class UserService implements IUserService {
     @Override
     public User getUserById(long id) {
         return userDao.getUserById(id);
+    }
+
+    @Override
+    public void save(User user) {
+        userDao.save(user);
+    }
+
+    @Override
+    public User getUserByUpdateAndSaveIfNotExist(Update update) {
+        long id = MessageUtils.getUserIdFromUpdate(update);
+        User userFromDb = userDao.getUserById(id);
+        if (userFromDb != null) {
+            return userFromDb;
+        }
+        org.telegram.telegrambots.meta.api.objects.User userModel = MessageUtils.getUserNameFromUpdate(update);
+
+        User user = new User(id, userModel.getFirstName(), userModel.getLastName(), Role.GUEST);
+        userDao.save(user);
+        return user;
     }
 
     @Override

@@ -8,4 +8,6 @@ import com.teleBot.model.User;
 public interface IUserDao {
 
     User getUserById(long id);
+
+    void save(User user);
 }

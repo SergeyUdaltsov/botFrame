@@ -1,11 +1,15 @@
 package com.teleBot.utils;
 
 import com.teleBot.model.Button;
+import com.teleBot.model.ButtonsType;
 import com.teleBot.model.KeyBoardType;
 import com.teleBot.model.MessageHolder;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -20,11 +24,15 @@ import java.util.stream.Collectors;
 public class MessageUtils {
 
     public static String getTextFromUpdate(Update update) {
-        return update.getMessage().getText();
+        CallbackQuery callbackQuery = update.getCallbackQuery();
+        return callbackQuery != null ? callbackQuery.getData() : update.getMessage().getText();
     }
 
     public static long getUserIdFromUpdate(Update update) {
-        return update.getMessage().getFrom().getId();
+        CallbackQuery callbackQuery = update.getCallbackQuery();
+        return callbackQuery != null
+                ? callbackQuery.getFrom().getId()
+                : update.getMessage().getFrom().getId();
     }
 
     public static Map<String, String> commonButtonsMap() {
@@ -42,10 +50,21 @@ public class MessageUtils {
         return holder(dashboardButtons(), "Выбери раздел", KeyBoardType.TWO_ROW, true, false);
     }
 
-    public static Map<String, String> buildButtons(List<String> buttons, boolean withCommon) {
+    public static User getUserNameFromUpdate(Update update) {
+        CallbackQuery callbackQuery = update.getCallbackQuery();
+        if (callbackQuery != null) {
+            return callbackQuery.getFrom();
+        }
+        return update.getMessage().getFrom();
+    }
+
+    public static Map<String, String> buildButtons(List<Button> buttons, boolean withCommon) {
         Map<String, String> resultMap = new LinkedHashMap<>();
-        for (String button : buttons) {
-            resultMap.put(button, button);
+        for (Button button : buttons) {
+
+            resultMap.put(button.getValue(), StringUtils.isBlank(button.getCallback())
+                    ? button.getValue()
+                    : button.getCallback());
         }
         if (withCommon) {
             resultMap.putAll(commonButtonsMap());
@@ -53,11 +72,13 @@ public class MessageUtils {
         return resultMap;
     }
 
-    public static SendMessage buildMessage(List<String> buttons, String message, long operatorId, KeyBoardType type,
-                                           boolean withCommonButtons) {
-        SendMessage sendMessage = new SendMessage(String.valueOf(operatorId), message);
-        Map<String, String> buttonsMap = buildButtons(buttons, withCommonButtons);
-        ReplyKeyboardMarkup keyboard = KeyBoardUtils.buildReplyKeyboard(buttonsMap, type);
+    public static SendMessage buildMessage(List<Button> buttons, MessageHolder holder, long operatorId) {
+        SendMessage sendMessage = new SendMessage(String.valueOf(operatorId), holder.getMessage());
+        Map<String, String> buttonsMap = buildButtons(buttons, holder.isWithCommonButtons());
+        ReplyKeyboard keyboard = holder.getButtonsType()
+                .getButtonsFunction()
+                .apply(buttonsMap, holder.getKeyBoardType());
+
         sendMessage.setReplyMarkup(keyboard);
         return sendMessage;
     }
@@ -74,18 +95,23 @@ public class MessageUtils {
         return commonHolder(titles, message, type, true);
     }
 
+    public static MessageHolder uncheckableHolder(List<String> titles, String message, KeyBoardType type) {
+        return holder(titles, message, type, false, false);
+    }
+
     public static MessageHolder commonHolder(List<String> titles, String message, KeyBoardType type,
                                              boolean isCheckable) {
         return holder(titles, message, type, isCheckable, true);
     }
 
     public static MessageHolder holder(List<String> titles, String message, KeyBoardType type,
-                                             boolean isCheckable, boolean withCommonButtons) {
+                                       boolean isCheckable, boolean withCommonButtons) {
         return MessageHolder.builder()
                 .withCommonButtons(withCommonButtons)
                 .withMessage(message)
                 .withButtons(commonButtons(titles, isCheckable))
                 .withKeyboardType(type)
+                .withButtonsType(ButtonsType.INLINE)
                 .build();
     }
 

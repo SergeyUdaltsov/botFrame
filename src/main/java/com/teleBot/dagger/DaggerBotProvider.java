@@ -1,16 +1,21 @@
 package com.teleBot.dagger;
 
 import com.teleBot.application.TelegramBot;
-import com.teleBot.helper.IDashboardHelper;
 import com.teleBot.model.CommandKey;
 import com.teleBot.model.CommandType;
 import com.teleBot.processor.FileSender;
 import com.teleBot.processor.IProcessor;
 import com.teleBot.processor.IProcessorFactory;
-import com.teleBot.processor.impl.DashboardProcessor;
-import com.teleBot.processor.impl.ProcessorFactory;
-import com.teleBot.processor.impl.StartProcessor;
+import com.teleBot.processor.payments.PaymentTypeSelectProcessor;
+import com.teleBot.processor.players.PaymentPlayerSelectProcessor;
+import com.teleBot.processor.registration.car.BrandRegistrationProcessor;
+import com.teleBot.processor.registration.car.ModelRegistrationProcessor;
+import com.teleBot.processor.year.PaymentYearSelectProcessor;
+import com.teleBot.processor.payments.PaymentsDashboardProcessor;
+import com.teleBot.processor.common.ProcessorFactory;
+import com.teleBot.processor.common.StartProcessor;
 import com.teleBot.service.IContextService;
+import com.teleBot.service.IPlayerService;
 import com.teleBot.service.IRoleFacade;
 import com.teleBot.service.ISecretService;
 import com.teleBot.service.IUserService;
@@ -26,7 +31,6 @@ import java.util.Map;
  */
 @Module(includes = {
         DaggerDaoProvider.class,
-        DaggerHelperProvider.class,
         DaggerServiceProvider.class})
 public class DaggerBotProvider {
 
@@ -42,16 +46,56 @@ public class DaggerBotProvider {
     @Singleton
     @IntoMap
     @CommandKey(CommandType.START)
-    public IProcessor startProcessor(IContextService contextService, IRoleFacade roleFacade) {
-        return new StartProcessor(contextService, roleFacade);
+    public IProcessor startProcessor(IContextService contextService) {
+        return new StartProcessor(contextService);
     }
 
     @Provides
     @Singleton
     @IntoMap
-    @CommandKey(CommandType.DASHBOARD_PROCESSOR)
-    public IProcessor dashboardProcessor(IContextService contextService) {
-        return new DashboardProcessor(contextService);
+    @CommandKey(CommandType.PAYMENTS_PROCESSOR)
+    public IProcessor paymentProcessor() {
+        return new PaymentsDashboardProcessor();
+    }
+
+    @Provides
+    @Singleton
+    @IntoMap
+    @CommandKey(CommandType.BRAND_REGISTRATION_PROCESSOR)
+    public IProcessor brandRegistrationProcessor(IUserService userService) {
+        return new BrandRegistrationProcessor(userService);
+    }
+
+    @Provides
+    @Singleton
+    @IntoMap
+    @CommandKey(CommandType.MODEL_REGISTRATION_PROCESSOR)
+    public IProcessor modelRegistrationProcessor(IUserService userService) {
+        return new ModelRegistrationProcessor(userService);
+    }
+
+    @Provides
+    @Singleton
+    @IntoMap
+    @CommandKey(CommandType.PAYMENT_YEAR_SELECT_PROCESSOR)
+    public IProcessor paymentYearSelectProcessor(IUserService userService) {
+        return new PaymentYearSelectProcessor(userService);
+    }
+
+    @Provides
+    @Singleton
+    @IntoMap
+    @CommandKey(CommandType.PAYMENT_PLAYER_SELECT_PROCESSOR)
+    public IProcessor paymentPlayerSelectProcessor(IPlayerService playerService) {
+        return new PaymentPlayerSelectProcessor(playerService);
+    }
+
+    @Provides
+    @Singleton
+    @IntoMap
+    @CommandKey(CommandType.PAYMENT_TYPE_SELECT_PROCESSOR)
+    public IProcessor paymentTypeSelectProcessor() {
+        return new PaymentTypeSelectProcessor();
     }
 
     @Provides

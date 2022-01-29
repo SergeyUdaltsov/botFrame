@@ -1,9 +1,12 @@
 package com.teleBot.model;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConvertedEnum;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,8 +19,16 @@ public class User {
 
     @DynamoDBHashKey
     private long id;
-    private String name;
+
+    @JsonProperty("n")
+    @DynamoDBAttribute(attributeName = "n")
+    private String firstName;
+
+    private String lastName;
+
     private List<String> years;
+
+    private List<Car> cars;
 
     @DynamoDBTypeConvertedEnum
     private Role role;
@@ -25,10 +36,28 @@ public class User {
     public User() {
     }
 
-    public User(long id, String name, Role role) {
+    public User(long id, String firstName, String lastName, Role role) {
         this.id = id;
-        this.name = name;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.role = role;
+        this.cars = new ArrayList<>();
+    }
+
+    public List<Car> getCars() {
+        return cars;
+    }
+
+    public void setCars(List<Car> cars) {
+        this.cars = cars;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public List<String> getYears() {
@@ -47,12 +76,12 @@ public class User {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
     public Role getRole() {

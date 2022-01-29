@@ -1,15 +1,15 @@
-package com.teleBot.processor.impl;
+package com.teleBot.processor.common;
 
 import com.teleBot.model.CommandType;
 import com.teleBot.model.Context;
 import com.teleBot.processor.IProcessor;
 import com.teleBot.processor.IProcessorFactory;
 import com.teleBot.service.IContextService;
-import com.teleBot.utils.CollectionUtils;
+import com.teleBot.utils.Constants;
 import com.teleBot.utils.MessageUtils;
+import com.teleBot.utils.StringUtils;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,16 +31,21 @@ public class ProcessorFactory implements IProcessorFactory {
             return processorsMap.get(CommandType.START);
         }
 
-        List<CommandType> location = context.getLocation();
-        CommandType commandType;
-        if ("назад".equalsIgnoreCase(MessageUtils.getTextFromUpdate(update))) {
-            commandType = location.size() < 3
-                    ? CommandType.START
-                    : contextService.getPreviousCommandTypeAndSaveLocation(context);
-
-        } else {
-            commandType = CollectionUtils.getLastElement(location);
-        }
+        String commandKey = contextService.getMessageText(update);
+        System.out.println("Command key ----------- " + commandKey);
+        String commandName = defineCommandTypeName(commandKey, context.getCommands());
+        System.out.println("Command name ----------- " + commandName);
+        CommandType commandType = CommandType.fromValue(commandName);
         return processorsMap.get(commandType);
+    }
+
+    private String defineCommandTypeName(String commandKey, Map<String, String> commandsMap) {
+        if (Constants.BACK.equals(commandKey)) {
+            return commandsMap.get(commandKey);
+        }
+        String defaultCommandName = commandsMap.get(Constants.EACH);
+        return StringUtils.isBlank(defaultCommandName)
+                ? commandsMap.get(commandKey)
+                : defaultCommandName;
     }
 }

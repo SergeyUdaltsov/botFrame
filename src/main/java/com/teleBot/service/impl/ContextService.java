@@ -5,7 +5,9 @@ import com.teleBot.model.CommandType;
 import com.teleBot.model.Context;
 import com.teleBot.service.IContextService;
 import com.teleBot.utils.CollectionUtils;
+import com.teleBot.utils.JsonUtils;
 import com.teleBot.utils.MessageUtils;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.Collections;
@@ -43,6 +45,13 @@ public class ContextService implements IContextService {
     }
 
     @Override
+    public void updateContextCommands(Map<String, String> commands, Update update) {
+        Context contextFromDb = getContext(update);
+        contextFromDb.setCommands(commands);
+        contextDao.save(contextFromDb);
+    }
+
+    @Override
     public String getStringValueFromParams(Update update, String paramKey) {
         Context context = getContext(update);
         return (String) context.getParams().get(paramKey);
@@ -55,37 +64,11 @@ public class ContextService implements IContextService {
     }
 
     @Override
-    public void clearContext(Update update) {
-        Context context = new Context();
-        context.setLocation(Collections.singletonList(CommandType.DASHBOARD_PROCESSOR));
-        context.setUserId(MessageUtils.getUserIdFromUpdate(update));
-        context.setParams(Collections.emptyMap());
-        save(context);
-    }
-
-    @Override
-    public CommandType getPreviousCommandTypeAndSaveLocation(Context context) {
-        List<CommandType> location = context.getLocation();
-        List<CommandType> updatedLocation = CollectionUtils.removeLastElements(location, 2);
-        context.setLocation(updatedLocation);
-        save(context);
-        return CollectionUtils.getLastElement(updatedLocation);
-    }
-
-    @Override
-    public void updateContextLocation(Update update, CommandType type) {
-        Context context = getContext(update);
-        List<CommandType> location = context.getLocation();
-        location.add(type);
-        save(context);
-    }
-
-    @Override
-    public String getMessageTextOrDefault(Update update, String paramKey) {
-        String text = update.getMessage().getText();
-        return text.equalsIgnoreCase("назад")
-                ? (String) getContext(update).getParams().get(paramKey)
-                : text;
+    public String getMessageText(Update update) {
+        if (update.getCallbackQuery() != null) {
+            return update.getCallbackQuery().getData();
+        }
+        return update.getMessage().getText();
     }
 
     @Override
@@ -93,13 +76,12 @@ public class ContextService implements IContextService {
         if (update == null) {
             return null;
         }
+        CallbackQuery callbackQuery = update.getCallbackQuery();
+        if (callbackQuery != null) {
+            return contextDao.getContext(callbackQuery.getFrom().getId());
+        }
         Long userId = update.getMessage().getFrom().getId();
         return contextDao.getContext(userId);
     }
 
-    @Override
-    public void updateContextCommand(long userId, CommandType commandType, CommandType previousCommandType,
-                                     Map<String, Object> params) {
-        contextDao.updateContextCommand(userId, commandType, previousCommandType, params);
-    }
 }

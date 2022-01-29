@@ -1,6 +1,7 @@
 package com.teleBot.utils;
 
 import com.teleBot.model.KeyBoardType;
+import com.vdurmont.emoji.EmojiParser;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -15,7 +16,7 @@ import java.util.Map;
  * @author Serhii_Udaltsov on 4/8/2021
  */
 public class KeyBoardUtils {
-    public static InlineKeyboardMarkup buildKeyboard(Map<String, String> buttonsMap, KeyBoardType type) {
+    public static InlineKeyboardMarkup buildInlineKeyboard(Map<String, String> buttonsMap, KeyBoardType type) {
         InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
         List<InlineKeyboardButton> rowInline = new ArrayList<>();

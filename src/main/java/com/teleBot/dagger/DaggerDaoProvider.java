@@ -5,11 +5,13 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.teleBot.dao.IContextDao;
 import com.teleBot.dao.IDynamoDbFactory;
+import com.teleBot.dao.IPlayerDao;
 import com.teleBot.dao.ISettingDao;
 import com.teleBot.dao.IUserDao;
 import com.teleBot.dao.IUserSessionDao;
 import com.teleBot.dao.impl.ContextDao;
 import com.teleBot.dao.impl.DynamoDbFactory;
+import com.teleBot.dao.impl.PlayerDao;
 import com.teleBot.dao.impl.SettingDao;
 import com.teleBot.dao.impl.UserDao;
 import com.teleBot.dao.impl.UserSessionDao;
@@ -60,6 +62,12 @@ public class DaggerDaoProvider {
     @Singleton
     public IUserDao userDao(IDynamoDbFactory dynamoDbFactory) {
         return new UserDao(dynamoDbFactory);
+    }
+
+    @Provides
+    @Singleton
+    public IPlayerDao playerDao(IDynamoDbFactory dynamoDbFactory) {
+        return new PlayerDao(dynamoDbFactory);
     }
 
     @Provides

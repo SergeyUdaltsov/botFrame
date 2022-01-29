@@ -5,10 +5,12 @@ package com.teleBot.model;
  */
 public class Button {
     private String value;
+    private String callback;
     private boolean checkable;
 
-    public Button(String value, boolean checkable) {
+    public Button(String value, String callback, boolean checkable) {
         this.value = value;
+        this.callback = callback;
         this.checkable = checkable;
     }
 
@@ -24,6 +26,14 @@ public class Button {
         this.value = value;
     }
 
+    public String getCallback() {
+        return callback;
+    }
+
+    public void setCallback(String callback) {
+        this.callback = callback;
+    }
+
     public boolean isCheckable() {
         return checkable;
     }
@@ -34,10 +44,16 @@ public class Button {
 
     public static class Builder {
         private String value;
+        private String callback;
         private boolean checkable;
 
         public Builder withValue(String value) {
             this.value = value;
+            return this;
+        }
+
+        public Builder withCallback(String callback) {
+            this.callback = callback;
             return this;
         }
 
@@ -47,7 +63,7 @@ public class Button {
         }
 
         public Button build() {
-            return new Button(value, checkable);
+            return new Button(value, callback, checkable);
         }
     }
 }

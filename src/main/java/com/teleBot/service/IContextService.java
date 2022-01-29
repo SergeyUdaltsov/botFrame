@@ -15,22 +15,16 @@ public interface IContextService {
 
     Context getContext(Update update);
 
-    void updateContextCommand(long contextId, CommandType commandType, CommandType previousCommandType,
-                              Map<String, Object> params);
-
-    void updateContextLocation(Update update, CommandType type);
+    void updateContextCommands(Map<String, String> commands, Update update);
 
     void updateContextParams(Update update, Map<String, Object> params);
 
     void updateContextParams(long chatId, Map<String, Object> params);
 
-    String getMessageTextOrDefault(Update update, String paramKey);
+    String getMessageText(Update update);
 
     String getStringValueFromParams(Update update, String paramKey);
 
     Object getValueFromParams(Update update, String paramKey);
 
-    CommandType getPreviousCommandTypeAndSaveLocation(Context context);
-
-    void clearContext(Update update);
 }

@@ -1,7 +1,6 @@
 package com.teleBot.application;
 
 import com.teleBot.exception.ExceptionHandler;
-import com.teleBot.model.CommandType;
 import com.teleBot.model.Context;
 import com.teleBot.model.MessageHolder;
 import com.teleBot.model.User;
@@ -12,22 +11,21 @@ import com.teleBot.service.IRoleFacade;
 import com.teleBot.service.ISecretService;
 import com.teleBot.service.IUserService;
 import com.teleBot.utils.MessageUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author Serhii_Udaltsov on 4/7/2021
  */
 public class TelegramBot extends TelegramLongPollingBot {
-    private static final Logger LOG = LoggerFactory.getLogger(TelegramBot.class);
 
     private IProcessorFactory factory;
     private IContextService contextService;
@@ -52,7 +50,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        BotApiMethod botApiMethod;
+        List<BotApiMethod> messages = new ArrayList<>();
         long userId = MessageUtils.getUserIdFromUpdate(update);
         try {
             User userFromCache = usersCache.get(userId);
@@ -66,25 +64,29 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
             Context context = contextService.getContext(update);
             IProcessor processor = factory.getProcessor(update, context);
-            MessageHolder messageHolder = processor.processRequest(update);
-            botApiMethod = roleFacade.filterByNotAllowed(messageHolder, userId);
-            CommandType nextCommandType = processor.getNextCommandType();
-            if (nextCommandType != null) {
-                contextService.updateContextLocation(update, nextCommandType);
-            }
+            List<MessageHolder> result = processor.processRequest(update);
+            messages = roleFacade.filterByNotAllowed(result, userId);
+            fillAndUpdateContext(update, processor);
         } catch (Exception e) {
-            botApiMethod = ExceptionHandler.handle(e, userId);
+            messages.add(ExceptionHandler.handle(e, userId));
             e.printStackTrace();
         }
         try {
-            execute(botApiMethod);
+            for (BotApiMethod message : messages) {
+                execute(message);
+            }
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
     }
 
+    private void fillAndUpdateContext(Update update, IProcessor processor) {
+        Map<String, String> commands = processor.getCommands();
+        contextService.updateContextCommands(commands, update);
+    }
+
     @Override
     public String getBotUsername() {
-        return "CoachHelper";
+        return "FrameBot";
     }
 }

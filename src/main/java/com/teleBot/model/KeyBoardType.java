@@ -7,6 +7,8 @@ public enum KeyBoardType {
     WITHOUT_KEYBOARD(0),
     TWO_ROW(2),
     THREE_ROW(3),
+    FOUR_ROW(4),
+    FIVE_ROW(5),
     VERTICAL(1),
     HORIZONTAL(999);
     private int elementInRow;
